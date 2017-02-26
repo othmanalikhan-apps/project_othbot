@@ -1,6 +1,11 @@
 import asyncio
 
+import csv
+import datetime
+import os
+
 import discord
+import pygal
 from discord.ext import commands
 
 ID = "285129311487524864"
@@ -36,21 +41,82 @@ def on_message(message):
 
 @bot.event
 @asyncio.coroutine
-def on_voice_state_update(mBefore, mAfter):
+def on_voice_state_update(before, after):
 
-    oldChannel = mBefore.voice.voice_channel
-    newChannel = mAfter.voice.voice_channel
+    filePath = os.path.join(".", "data", "log.csv")
 
-    server = mAfter.server
+    if not os.path.exists(filePath):
+        os.makedirs(filePath)
 
-    for channel in server.channels:
-        if channel.name == "thegathering":
-            msg = "Hello {0.name}, I see your friends have you forsaken " \
-                  "you... Don't worry... I'm here... watching you... " \
-                  "forever... and... ever..."\
-                .format(mAfter)
+    logUser(after, filePath)
 
-            yield from bot.send_message(channel, msg, tts=True)
+
+def logUser(member, filePath):
+    """
+    Writes the user activity (joining or leaving) a voice channel into a file.
+
+    :param member: Discord Member object.
+    :param filePath: Output file path.
+    """
+    with open(filePath, mode="a") as f:
+        # Creating data entry
+        name = member.name
+        time = datetime.datetime.now()
+        if member.voice.voice_channel:
+            isConnect = True
+        else:
+            isConnect = False
+
+        # Writing data
+        csvWriter = csv.writer(f, delimiter=",")
+        csvWriter.writerow([time, name, isConnect])
+
+
+def plotUsers(data, outDir):
+    """
+    """
+    # Initialising beautiful plot format
+    config = pygal.Config()
+    config.human_readable = True
+    config.legend_at_bottom = True
+    config.x_label_rotation = 35
+    config.x_value_formatter = lambda dt: dt.strftime('%Y-%m-%d')
+    config.value_formatter = lambda y: "{:.0f} GBP".format(y)
+    config.title = "Immediate Expense Vs Time"
+
+    plot = pygal.DateTimeLine(config)
+
+    def prepareDFPlot(df):
+        plotData = []
+        for i, row in df.iterrows():
+            d = row["DATES"]
+            b = row["AMOUNT"]
+            plotData.append((d, b))
+        return plotData
+
+    # Preparing all data frames for plotting
+    for title, df in data:
+        plot.add(title, sorted(prepareDFPlot(df)))
+
+    # Save the plot to a file
+    plot.render_to_file(os.path.join(outDir, 'balance_vs_time.svg'))
+
+
+
+
+# def stalk():
+    # oldChannel = mBefore.voice.voice_channel
+    # newChannel = mAfter.voice.voice_channel
+    #
+    # server = mAfter.server
+    # for channel in server.channels:
+    #     if channel.name == "thegathering":
+    #         msg = "Hello {0.name}, I see your friends have you forsaken " \
+    #               "you... Don't worry... I'm here... watching you... " \
+    #               "forever... and... ever..."\
+    #             .format(mAfter)
+    #
+    #         yield from bot.send_message(channel, msg, tts=True)
 
 
 
