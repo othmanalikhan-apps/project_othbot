@@ -60,7 +60,6 @@ def logUser(member, filePath):
     :param member: Discord Member object.
     :param filePath: Output file path.
     """
-    # Gathering data entries
     name = member.name
     time = datetime.datetime.now()
     if member.voice.voice_channel:
@@ -68,12 +67,17 @@ def logUser(member, filePath):
     else:
         isConnect = False
 
+    header = ["TIME", "JOIN", "USER"]
     entry = [time, isConnect, name]
 
-    # Writing data
-    with open(filePath, mode="a", newline='') as f:
-        csvWriter = csv.writer(f, delimiter=",")
-        csvWriter.writerow(entry)
+    if not os.path.exists(filePath):
+        with open(filePath, mode="w", newline='') as f:
+            csvWriter = csv.writer(f, delimiter=",")
+            csvWriter.writerow(header)
+    else:
+        with open(filePath, mode="a", newline='') as f:
+            csvWriter = csv.writer(f, delimiter=",")
+            csvWriter.writerow(entry)
 
 
 def plotUsers(dataPath, outPath):
@@ -88,9 +92,14 @@ def plotUsers(dataPath, outPath):
     config.value_formatter = lambda y: "{:.0f} GBP".format(y)
     config.title = "Immediate Expense Vs Time"
 
+    # TODO:
+    # 1. Find alternative to pandas that merges well with matplotlib
+    # 2. Read data from CSV then plot
     plot = pygal.DateTimeLine(config)
-
     data = DataFrame.read_csv(dataPath)
+    
+
+
 
     def prepareDFPlot(df):
         plotData = []
@@ -139,14 +148,13 @@ bot.run(TOKEN)
 
 # BLUEPRINT
 ###########
-# 1. Logs and graphs members appearance in voice channels
 #
-# 2. Joins the voice channel when only one person is present in the channel
-# and begins used /TTS to start creepy conversations (e.g. A good day to die
-# today, huh?)
+# 1. Logs and graphs members activity
 #
-# 3. Add puns function
+# 2. Add puns function
 #
-# 4. Join voice channel
+# 3. Join all voice channel
 #
-# 5. When someone leaves a voice channel, activitate Arnold 'I'll be back'
+# 4. Play "I'll be back" when someone leaves a voice channel
+#
+# 5. Accompanies lone person in voice channel and does creepy TTS conversation
