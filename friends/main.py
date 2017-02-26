@@ -44,11 +44,11 @@ def on_message(message):
 def on_voice_state_update(before, after):
 
     filePath = os.path.join(".", "data", "log.csv")
-
     if not os.path.exists(filePath):
         os.makedirs(filePath)
 
     logUser(after, filePath)
+    plotUsers(filePath, filePath)
 
 
 def logUser(member, filePath):
@@ -65,20 +65,16 @@ def logUser(member, filePath):
     else:
         isConnect = False
 
-    entry = [time, name, isConnect]
+    entry = [time, isConnect, name]
 
     with open(filePath, mode="a") as f:
         csvWriter = csv.writer(f, delimiter=",")
         csvWriter.writerow(entry)
 
 
-def plotUsers(outDir):
+def plotUsers(dataPath, outDir):
     """
     """
-
-
-
-
     # Initialising beautiful plot format
     config = pygal.Config()
     config.human_readable = True
@@ -90,17 +86,27 @@ def plotUsers(outDir):
 
     plot = pygal.DateTimeLine(config)
 
-    def prepareDFPlot(df):
-        plotData = []
-        for i, row in df.iterrows():
-            d = row["DATES"]
-            b = row["AMOUNT"]
-            plotData.append((d, b))
-        return plotData
+    data = []
+    with open(dataPath) as f:
+        csvReader = csv.reader(f)
+        for row in csvReader:
+            print(row)
+            data.append((row[0], row[1]))
+
+    #
+    # def prepareDFPlot(df):
+    #     plotData = []
+    #     for i, row in df.iterrows():
+    #         d = row["DATES"]
+    #         b = row["AMOUNT"]
+    #         plotData.append((d, b))
+    #     return plotData
 
     # Preparing all data frames for plotting
-    for title, df in data:
-        plot.add(title, sorted(prepareDFPlot(df)))
+    # for title, df in data:
+    #     plot.add(title, sorted(prepareDFPlot(df)))
+
+    plot.add("test", data)
 
     # Save the plot to a file
     plot.render_to_file(os.path.join(outDir, 'history.svg'))
