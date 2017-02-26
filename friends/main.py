@@ -3,9 +3,7 @@ import csv
 import datetime
 import os
 
-import pygal
 from discord.ext import commands
-from pandas import DataFrame
 
 ID = "285129311487524864"
 TOKEN = "Mjg1MTI5MzExNDg3NTI0ODY0.C5NsmQ.G30YlYDzQnmmgaI-KHg_vAtQIdc"
@@ -49,16 +47,22 @@ def on_voice_state_update(before, after):
     if not os.path.exists(dataDir):
         os.makedirs(dataDir)
 
-    logUser(after, logPath)
+    logUser(after, logPath, delimiter=",")
     # plotUsers(logPath, plotPath)
 
 
-def logUser(member, filePath):
+def logUser(member, filePath, delimiter):
     """
     Writes the user activity (joining or leaving) a voice channel into a file.
 
+    The format of a data entry in the csv file contains the following in order:
+        - Time (datetime)
+        - IsConnect (boolean)
+        - User (string)
+
     :param member: Discord Member object.
     :param filePath: Output file path.
+    :param delimiter: String delimiter used in the CSV output file.
     """
     name = member.name
     time = datetime.datetime.now()
@@ -72,59 +76,16 @@ def logUser(member, filePath):
 
     if not os.path.exists(filePath):
         with open(filePath, mode="w", newline='') as f:
-            csvWriter = csv.writer(f, delimiter=",")
+            csvWriter = csv.writer(f, delimiter=delimiter)
             csvWriter.writerow(header)
     else:
         with open(filePath, mode="a", newline='') as f:
-            csvWriter = csv.writer(f, delimiter=",")
+            csvWriter = csv.writer(f, delimiter=delimiter)
             csvWriter.writerow(entry)
 
 
-def plotUsers(dataPath, outPath):
-    """
-    """
-    # Initialising beautiful plot format
-    config = pygal.Config()
-    config.human_readable = True
-    config.legend_at_bottom = True
-    config.x_label_rotation = 35
-    config.x_value_formatter = lambda dt: dt.strftime('%Y-%m-%d')
-    config.value_formatter = lambda y: "{:.0f} GBP".format(y)
-    config.title = "Immediate Expense Vs Time"
-
-    # TODO:
-    # 1. Find alternative to pandas that merges well with matplotlib
-    # 2. Read data from CSV then plot
-    plot = pygal.DateTimeLine(config)
-    data = DataFrame.read_csv(dataPath)
-    
 
 
-
-    def prepareDFPlot(df):
-        plotData = []
-        for i, row in df.iterrows():
-            d = row["DATES"]
-            b = row["AMOUNT"]
-            plotData.append((d, b))
-        return plotData
-
-    # Preparing all data frames for plotting
-    # for title, data in prepareDFPlot(data):
-        # plot.add(title, sorted(df))
-
-
-    # plot.add("test", data)
-
-    # Save the plot to a file
-    # plot.render_to_file(outPath)
-
-
-#
-# dataDir = os.path.join(".", "data")
-# logPath = os.path.join(dataDir, "log.csv")
-# plotPath = os.path.join(dataDir, "history.svg")
-# plotUsers(logPath, plotPath)
 
 
 # def stalk():
