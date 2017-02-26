@@ -58,23 +58,27 @@ def logUser(member, filePath):
     :param member: Discord Member object.
     :param filePath: Output file path.
     """
+    name = member.name
+    time = datetime.datetime.now()
+    if member.voice.voice_channel:
+        isConnect = True
+    else:
+        isConnect = False
+
+    entry = [time, name, isConnect]
+
     with open(filePath, mode="a") as f:
-        # Creating data entry
-        name = member.name
-        time = datetime.datetime.now()
-        if member.voice.voice_channel:
-            isConnect = True
-        else:
-            isConnect = False
-
-        # Writing data
         csvWriter = csv.writer(f, delimiter=",")
-        csvWriter.writerow([time, name, isConnect])
+        csvWriter.writerow(entry)
 
 
-def plotUsers(data, outDir):
+def plotUsers(outDir):
     """
     """
+
+
+
+
     # Initialising beautiful plot format
     config = pygal.Config()
     config.human_readable = True
@@ -99,7 +103,7 @@ def plotUsers(data, outDir):
         plot.add(title, sorted(prepareDFPlot(df)))
 
     # Save the plot to a file
-    plot.render_to_file(os.path.join(outDir, 'balance_vs_time.svg'))
+    plot.render_to_file(os.path.join(outDir, 'history.svg'))
 
 
 
