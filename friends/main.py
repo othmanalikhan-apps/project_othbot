@@ -3,7 +3,6 @@ import csv
 import datetime
 import os
 
-import pandas as pd
 import pygal
 from discord.ext import commands
 from pandas import DataFrame
@@ -72,7 +71,7 @@ def logUser(member, filePath):
     entry = [time, isConnect, name]
 
     # Writing data
-    with open(filePath, mode="w", newline='') as f:
+    with open(filePath, mode="a", newline='') as f:
         csvWriter = csv.writer(f, delimiter=",")
         csvWriter.writerow(entry)
 
