@@ -1,12 +1,12 @@
 import asyncio
-
 import csv
 import datetime
 import os
 
-import discord
+import pandas as pd
 import pygal
 from discord.ext import commands
+from pandas import DataFrame
 
 ID = "285129311487524864"
 TOKEN = "Mjg1MTI5MzExNDg3NTI0ODY0.C5NsmQ.G30YlYDzQnmmgaI-KHg_vAtQIdc"
@@ -43,12 +43,15 @@ def on_message(message):
 @asyncio.coroutine
 def on_voice_state_update(before, after):
 
-    filePath = os.path.join(".", "data", "log.csv")
-    if not os.path.exists(filePath):
-        os.makedirs(filePath)
+    dataDir = os.path.join(".", "data")
+    logPath = os.path.join(dataDir, "log.csv")
+    plotPath = os.path.join(dataDir, "history.svg")
 
-    logUser(after, filePath)
-    plotUsers(filePath, filePath)
+    if not os.path.exists(dataDir):
+        os.makedirs(dataDir)
+
+    logUser(after, logPath)
+    # plotUsers(logPath, plotPath)
 
 
 def logUser(member, filePath):
@@ -58,6 +61,7 @@ def logUser(member, filePath):
     :param member: Discord Member object.
     :param filePath: Output file path.
     """
+    # Gathering data entries
     name = member.name
     time = datetime.datetime.now()
     if member.voice.voice_channel:
@@ -67,12 +71,13 @@ def logUser(member, filePath):
 
     entry = [time, isConnect, name]
 
-    with open(filePath, mode="a") as f:
+    # Writing data
+    with open(filePath, mode="w", newline='') as f:
         csvWriter = csv.writer(f, delimiter=",")
         csvWriter.writerow(entry)
 
 
-def plotUsers(dataPath, outDir):
+def plotUsers(dataPath, outPath):
     """
     """
     # Initialising beautiful plot format
@@ -86,32 +91,32 @@ def plotUsers(dataPath, outDir):
 
     plot = pygal.DateTimeLine(config)
 
-    data = []
-    with open(dataPath) as f:
-        csvReader = csv.reader(f)
-        for row in csvReader:
-            print(row)
-            data.append((row[0], row[1]))
+    data = DataFrame.read_csv(dataPath)
 
-    #
-    # def prepareDFPlot(df):
-    #     plotData = []
-    #     for i, row in df.iterrows():
-    #         d = row["DATES"]
-    #         b = row["AMOUNT"]
-    #         plotData.append((d, b))
-    #     return plotData
+    def prepareDFPlot(df):
+        plotData = []
+        for i, row in df.iterrows():
+            d = row["DATES"]
+            b = row["AMOUNT"]
+            plotData.append((d, b))
+        return plotData
 
     # Preparing all data frames for plotting
-    # for title, df in data:
-    #     plot.add(title, sorted(prepareDFPlot(df)))
+    # for title, data in prepareDFPlot(data):
+        # plot.add(title, sorted(df))
 
-    plot.add("test", data)
+
+    # plot.add("test", data)
 
     # Save the plot to a file
-    plot.render_to_file(os.path.join(outDir, 'history.svg'))
+    # plot.render_to_file(outPath)
 
 
+#
+# dataDir = os.path.join(".", "data")
+# logPath = os.path.join(dataDir, "log.csv")
+# plotPath = os.path.join(dataDir, "history.svg")
+# plotUsers(logPath, plotPath)
 
 
 # def stalk():
@@ -142,3 +147,7 @@ bot.run(TOKEN)
 # today, huh?)
 #
 # 3. Add puns function
+#
+# 4. Join voice channel
+#
+# 5. When someone leaves a voice channel, activitate Arnold 'I'll be back'
