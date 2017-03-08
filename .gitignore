@@ -9,3 +9,6 @@ docs/_build
 *.png
 *.jpg
 *.flac
+
+# User added
+data/
