@@ -30,7 +30,7 @@ def on_ready():
 def on_message(message):
     replies = {"Salam 3lykom": "Wa3lykom Asalam {0.author.mention}".format(message)}
 
-    # we do not want the bot to reply to itself
+    # Prevent bot from replying to self
     if message.author == bot.user:
         return
 
@@ -42,15 +42,24 @@ def on_message(message):
 @bot.event
 @asyncio.coroutine
 def on_voice_state_update(before, after):
-
     logUser(before, after, logPath, delimiter=",")
     # plotUsers(logPath, plotPath)
+
+
+################################################################################
 
 
 def logUser(before, after, filePath, delimiter):
     """
     Writes the user activity (joining or leaving) a voice channel into a file.
-    Swapping channels is not recorded.
+
+    Only the following events are recorded: a user joining a voice channel
+    without being in another one prior (i.e. moving between voice channels is
+    not recorded), and a user leaving all voice channels.
+
+    For each recorded event, two entries are written; The state of the user
+    before and after the activity. This is done to simplify plotting of data
+    down the line.
 
     The format of a data entry in the csv file contains the following in order:
         - Time (datetime)
@@ -75,10 +84,13 @@ def logUser(before, after, filePath, delimiter):
         isJoin = False
 
     if isJoin is not None:
-        entry = [time, isJoin, name]
         with open(filePath, mode="a", newline='') as f:
             csvWriter = csv.writer(f, delimiter=delimiter)
-            csvWriter.writerow(entry)
+
+            entryBefore = [time, not isJoin, name]
+            entryAfter = [time, isJoin, name]
+            csvWriter.writerow(entryBefore)
+            csvWriter.writerow(entryAfter)
 
 
 def initialiseDirs():
@@ -102,22 +114,19 @@ def createUserLogFile(header, delimiter):
             csvWriter.writerow(header)
 
 
-
-
-
 # def stalk():
-    # oldChannel = mBefore.voice.voice_channel
-    # newChannel = mAfter.voice.voice_channel
-    #
-    # server = mAfter.server
-    # for channel in server.channels:
-    #     if channel.name == "thegathering":
-    #         msg = "Hello {0.name}, I see your friends have you forsaken " \
-    #               "you... Don't worry... I'm here... watching you... " \
-    #               "forever... and... ever..."\
-    #             .format(mAfter)
-    #
-    #         yield from bot.send_message(channel, msg, tts=True)
+#     oldChannel = mBefore.voice.voice_channel
+#     newChannel = mAfter.voice.voice_channel
+#
+#     server = mAfter.server
+#     for channel in server.channels:
+#         if channel.name == "thegathering":
+#             msg = "Hello {0.name}, I see your friends have you forsaken " \
+#                   "you... Don't worry... I'm here... watching you... " \
+#                   "forever... and... ever..."\
+#                 .format(mAfter)
+#
+#             yield from bot.send_message(channel, msg, tts=True)
 
 
 if __name__ == "__main__":
@@ -145,3 +154,7 @@ if __name__ == "__main__":
 # TODO:
 # 1. Perhaps use class instead?
 # 2. Move the code below the header to somewhere more appropriate
+# 3. Check other discord bots to learn how to make bot modular using API
+# 4. Consider using log module instead
+# 5. Consider creating new file in logUser function because of file
+# accidental delete
