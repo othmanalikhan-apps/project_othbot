@@ -57,10 +57,6 @@ def logUser(before, after, filePath, delimiter):
     without being in another one prior (i.e. moving between voice channels is
     not recorded), and a user leaving all voice channels.
 
-    For each recorded event, two entries are written; The state of the user
-    before and after the activity. This is done to simplify plotting of data
-    down the line.
-
     The format of a data entry in the csv file contains the following in order:
         - Time (datetime)
         - IsConnect (boolean)
@@ -85,12 +81,9 @@ def logUser(before, after, filePath, delimiter):
 
     if isJoin is not None:
         with open(filePath, mode="a", newline='') as f:
+            entry = [time, isJoin, name]
             csvWriter = csv.writer(f, delimiter=delimiter)
-
-            entryBefore = [time, not isJoin, name]
-            entryAfter = [time, isJoin, name]
-            csvWriter.writerow(entryBefore)
-            csvWriter.writerow(entryAfter)
+            csvWriter.writerow(entry)
 
 
 def initialiseDirs():
